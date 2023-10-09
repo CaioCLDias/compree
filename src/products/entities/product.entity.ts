@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ProductCharacteristics } from "./product-characteristics.entity";
 import { ProductImages } from "./product-images.entity";
+import { OrderItems } from "../../order/entities/order-items.entity";
 
 @Entity({ name: "products" })
 export class Product {
@@ -29,6 +30,9 @@ export class Product {
     @OneToMany(() => ProductImages, (productImages) => productImages.product, { cascade: true, eager: true })
     images: ProductImages[];
 
+    @OneToMany(() => OrderItems, (orderItens) => orderItens.product)
+    orderItens: OrderItems[];
+
     @CreateDateColumn({ name: "created_at" })
     createdAt: string;
 
@@ -37,4 +41,6 @@ export class Product {
 
     @DeleteDateColumn({ name: "deleted_at" })
     deletedAt: string;
+
+ 
 }
