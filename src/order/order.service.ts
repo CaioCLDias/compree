@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto, OrderItemDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,11 +23,11 @@ export class OrderService {
 
   async createOrder(userId: string, orderDto: CreateOrderDto) {
 
-    const user = await this.userRepository.findOneBy({ id: userId });
+    const user = await this.getUSer(userId);
 
     const producIds = orderDto.orderItens.map((item) => item.productId)
 
-    const orderProducts = await this.productRepository.findBy({id: In(producIds)})
+    const orderProducts = await this.productRepository.findBy({ id: In(producIds) })
 
     const order = new Order;
 
@@ -38,7 +38,9 @@ export class OrderService {
 
       const orderProduct = orderProducts.find(
         (product) => product.id === item.productId
-      )
+      );
+
+      this.validateOrder(orderDto, orderProducts);
 
       const orderItem = new OrderItems();
 
@@ -53,9 +55,9 @@ export class OrderService {
     });
 
 
-    const amount  = await orderItens.reduce((total, item) => {
+    const amount = await orderItens.reduce((total, item) => {
       return total + item.salePrice * item.quantity;
-    }, 0) 
+    }, 0)
 
     order.orderItens = orderItens
 
@@ -80,20 +82,50 @@ export class OrderService {
 
   }
 
+  async update(id: string, updateOrderDto: UpdateOrderDto) {
 
-  findAll() {
-    return `This action returns all order`;
+    const order = await this.orderRepository.findOneBy({ id });
+
+    if (order === null){
+
+      throw new NotFoundException('Pedido não encontrado');
+
+    }
+
+    Object.assign(order, updateOrderDto);
+
+    return this.orderRepository.save(order);
+
+  }
+  
+  private async getUSer(id) {
+
+    const user = await this.userRepository.findOneBy({ id });
+
+    if (user === null) {
+      throw new NotFoundException('O usuário não foi encontrado');
+    }
+
+    return user;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  private validateOrder(orderDto: CreateOrderDto, orderProducts: Product[]){
+
+    orderDto.orderItens.forEach((item) => { 
+
+      const orderProduct = orderProducts.find(
+        (product) => product.id === item.productId
+      );
+
+      if (orderProduct === undefined){
+        throw new NotFoundException(`O produto com id ${item.productId}, não foi encontrado`);
+      }
+
+      if (orderProduct.quantity > item.quantity){
+        throw new BadRequestException(`A quantidade solicitada (${item.quantity}) é maior do que a disponível (${item.quantity})`);
+      }
+
+    });
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} order`;
-  }
 }

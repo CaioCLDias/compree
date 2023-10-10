@@ -54,7 +54,7 @@ export class ProductsService {
 
   async update(id: string, updateProductDto: UpdateProductDto) {
 
-    await this.repository.update(id, updateProductDto);
+    return this.repository.update(id, updateProductDto)
     
   }
 
