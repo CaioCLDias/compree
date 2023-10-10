@@ -71,6 +71,8 @@ export class OrderService {
 
   async getOrderByUser(userId: string) {
 
+    const user = this.getUSer(userId);
+
     return this.orderRepository.find({
       where: {
         user: { id: userId },

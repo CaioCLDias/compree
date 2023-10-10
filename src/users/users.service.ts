@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,17 +25,34 @@ export class UserService {
     return userList;
   }
 
-  findOne(id: string) {
-    return this.userRepository.findOneBy({id: id});
+  async findOne(id: string) {
+    const user = await this.userRepository.findOneBy({id: id});
+
+    if(user === null){
+      throw new NotFoundException('Usuário não econtrado')
+    }
+
+    return user;
+
   }
+
+  async findByEmail(email: string) {
+    const user = await this.userRepository.findOneBy({email: email});
+
+    
+    if(user === null){
+      throw new NotFoundException('Usuário não econtrado')
+    }
+
+    return user;
+
+  } 
 
   async create(createUserDto: CreateUserDto) {
     const user = new User();
 
-    user.email = createUserDto.email;
-    user.password = createUserDto.password;
-    user.name = createUserDto.name;
-
+    Object.assign(user, createUserDto as User);
+    
     await this.userRepository.save(user)
   }
 
@@ -44,7 +61,13 @@ export class UserService {
   }
 
   async remove(id: string) {
-    await this.userRepository.delete(id);
+    const user = await this.userRepository.delete(id);
+
+    if(user === null){
+      throw new NotFoundException('Usuário não econtrado');
+    }
+
+    return true;
   }
 
 }

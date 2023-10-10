@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
@@ -12,20 +12,15 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly repository: Repository<Product>
-  ){}
+  ) { }
 
   async create(productDTO: CreateProductDto) {
     const product = new Product();
 
-    product.name = productDTO.name;
-    product.description = productDTO.description;
-    product.price = productDTO.price;
-    product.quantity = productDTO.quantity;
-    product.characteristics = productDTO.characteristics;
-    product.images = productDTO.images;
+    Object.assign(product, productDTO as Product);
 
     await this.repository.save(product)
-    
+
   }
 
   async findAll() {
@@ -37,28 +32,48 @@ export class ProductsService {
     });
     const productList = products.map(
       (product) => new ListProductDTO(
-        product.id, 
+        product.id,
         product.name,
         product.characteristics,
         product.images
-        )
+      )
     );
 
     return productList;
   }
 
 
-  findOne(id: string) {
-    return this.repository.findBy({id: id});
+  async findOne(id: string) {
+    const product = await this.repository.findBy({ id: id });
+
+    if (product === null) {
+      throw new NotFoundException('Produto não encontrado')
+    }
+
+    return product;
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
 
-    return this.repository.update(id, updateProductDto)
-    
+    const product = await this.repository.findBy({ id })
+
+    if (product === null) {
+      throw new NotFoundException('Produto não encontrado')
+    }
+
+    Object.assign(id, updateProductDto)
+
+    await this.repository.save(updateProductDto)
+
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    const product = await this.repository.findBy({ id })
+
+    if (product === null) {
+      throw new NotFoundException('Produto não encontrado')
+    }
+
     return this.repository.delete(id);
   }
 }
