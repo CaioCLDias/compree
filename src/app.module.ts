@@ -8,7 +8,7 @@ import { DBConfigService } from './config/dg.config.service';
 import { ConfigModule } from '@nestjs/config';
 import { OrderModule } from './order/order.module';
 import { APP_FILTER } from '@nestjs/core';
-import { ExeptionFilter } from './filters/exception-filter';
+import { ExeptionFilter } from './resources/filters/exception-filter';
 
 @Module({
   imports: [
