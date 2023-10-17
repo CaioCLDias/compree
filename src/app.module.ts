@@ -9,6 +9,9 @@ import { ConfigModule } from '@nestjs/config';
 import { OrderModule } from './modules/order/order.module';
 import { APP_FILTER } from '@nestjs/core';
 import { ExeptionFilter } from './resources/filters/exception-filter';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
+
 
 @Module({
   imports: [
@@ -22,6 +25,11 @@ import { ExeptionFilter } from './resources/filters/exception-filter';
       inject: [DBConfigService],
     }),
     OrderModule,
+    CacheModule.registerAsync({
+      useFactory: async () => ({
+          store: await redisStore({ ttl: 10 * 1000}),
+      }),
+      isGlobal: true }),
   ],
   controllers: [AppController],
   providers: [
