@@ -11,6 +11,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { ExeptionFilter } from './resources/filters/exception-filter';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
+import { AuthenticationModule } from './modules/authentication/authentication.module';
 
 
 @Module({
@@ -30,6 +31,7 @@ import { redisStore } from 'cache-manager-redis-yet';
           store: await redisStore({ ttl: 10 * 1000}),
       }),
       isGlobal: true }),
+    AuthenticationModule,
   ],
   controllers: [AppController],
   providers: [
