@@ -1,3 +1,4 @@
+import { Exclude } from "class-transformer";
 import { Order } from "../../order/entities/order.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
@@ -13,6 +14,7 @@ export class User {
     @Column({ name: "email", length: 100, nullable: false })
     email: string;
 
+    @Exclude()
     @Column({ name: "password", length: 100, nullable: false })
     password: string;
 
