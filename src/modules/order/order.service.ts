@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto, OrderItemDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -84,14 +84,20 @@ export class OrderService {
 
   }
 
-  async update(id: string, updateOrderDto: UpdateOrderDto) {
+  async update(id: string, updateOrderDto: UpdateOrderDto, userId: string) {
 
-    const order = await this.orderRepository.findOneBy({ id });
+    const order = await this.orderRepository.findOne({ where: {id}, relations: { user: true } });
 
     if (order === null){
 
       throw new NotFoundException('Pedido não encontrado');
 
+    }
+
+    if (order.user.id !== userId) {
+      throw new ForbiddenException(
+        'Você não tem autorização para atualizar esse pedido',
+      );
     }
 
     Object.assign(order, updateOrderDto);

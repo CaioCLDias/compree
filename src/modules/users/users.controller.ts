@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/
 import { UserService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { HashPassWord } from '../../resources/pipes/hash-password.pipe';
 
 
 @Controller('/users')
@@ -19,9 +20,12 @@ export class UsersController {
   }
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
+  async create(
+    @Body() {password, ...createUserDto}: CreateUserDto,
+    @Body('password', HashPassWord) hashPassword: string,
+    ) {
 
-    const userCreate = await this.usersService.create(createUserDto);
+    const userCreate = await this.usersService.create({...createUserDto, password: hashPassword});
 
     return { message: "Usuário criado com sucesso", user: userCreate }
 

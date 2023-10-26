@@ -51,7 +51,7 @@ export class UserService {
   async create(createUserDto: CreateUserDto) {
     const user = new User();
 
-    Object.assign(user, createUserDto as User);
+    Object.assign(user, createUserDto as unknown as User);
     
     await this.userRepository.save(user)
   }
